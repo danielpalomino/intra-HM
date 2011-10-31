@@ -4,46 +4,30 @@
     <df name="linux" root=".">
       <df name="app" kind="SOURCE_LOGICAL_FOLDER">
         <df name="TAppDecoder" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
         <df name="TAppEncoder" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
       </df>
       <df name="common" kind="SOURCE_LOGICAL_FOLDER">
       </df>
       <df name="lib" kind="SOURCE_LOGICAL_FOLDER">
         <df name="TAppCommon" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
+          <df name="objects">
           </df>
         </df>
         <df name="TLibCommon" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
         <df name="TLibDecoder" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
         <df name="TLibEncoder" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
         <df name="TLibVideoIO" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
       </df>
       <df name="utils" kind="SOURCE_LOGICAL_FOLDER">
         <df name="annexBbytecount" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
         <df name="convert_NtoMbit_YCbCr" kind="SOURCE_LOGICAL_FOLDER">
-          <df name="objects" kind="SOURCE_LOGICAL_FOLDER">
-          </df>
         </df>
       </df>
     </df>

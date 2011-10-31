@@ -3,6 +3,20 @@ M32?= 0
  
 export M32
 
+coder:
+	$(MAKE) -C lib/TLibVideoIO 	MM32=$(M32)
+	$(MAKE) -C lib/TLibCommon 	MM32=$(M32)
+	$(MAKE) -C lib/TLibEncoder 	MM32=$(M32)
+	$(MAKE) -C lib/TAppCommon       MM32=$(M32)
+	$(MAKE) -C app/TAppEncoder      MM32=$(M32)
+
+decoder:
+	$(MAKE) -C lib/TLibVideoIO 	MM32=$(M32)
+	$(MAKE) -C lib/TLibCommon 	MM32=$(M32)
+	$(MAKE) -C lib/TLibDecoder 	MM32=$(M32)
+	$(MAKE) -C lib/TAppCommon       MM32=$(M32)
+	$(MAKE) -C app/TAppDecoder      MM32=$(M32)
+
 all:
 	$(MAKE) -C lib/TLibVideoIO 	MM32=$(M32)
 	$(MAKE) -C lib/TLibCommon 	MM32=$(M32)

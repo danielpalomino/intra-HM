@@ -34,7 +34,6 @@
 /** \file     encmain.cpp
     \brief    Encoder application main
 */
-
 #include <time.h>
 #include "TAppEncTop.h"
 
@@ -45,9 +44,13 @@
 // Main function
 // ====================================================================================================================
 
+FILE *teste;
+
 int main(int argc, char* argv[])
 {
   TAppEncTop  cTAppEncTop;
+
+  teste = fopen("teste.txt" , "w");
 
   // print information
   fprintf( stdout, "\n" );
@@ -80,6 +83,8 @@ int main(int argc, char* argv[])
 
   // destroy application encoder class
   cTAppEncTop.destroy();
+
+  fclose(teste);
 
   return 0;
 }

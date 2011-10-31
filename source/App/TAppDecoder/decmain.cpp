@@ -43,6 +43,8 @@
 //! \ingroup TAppDecoder
 //! \{
 
+FILE *teste;
+
 bool g_md5_mismatch = false; ///< top level flag that indicates if there has been a decoding mismatch
 
 // ====================================================================================================================
@@ -52,6 +54,8 @@ bool g_md5_mismatch = false; ///< top level flag that indicates if there has bee
 int main(int argc, char* argv[])
 {
   TAppDecTop  cTAppDecTop;
+
+  teste = fopen("teste.txt", "w");
 
   // print information
   fprintf( stdout, "\n" );
@@ -89,6 +93,8 @@ int main(int argc, char* argv[])
 
   // destroy application decoder class
   cTAppDecTop.destroy();
+
+  fclose(teste);
 
   return g_md5_mismatch ? EXIT_FAILURE : EXIT_SUCCESS;
 }

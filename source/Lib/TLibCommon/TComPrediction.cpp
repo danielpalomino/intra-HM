@@ -34,7 +34,6 @@
 /** \file     TComPrediction.cpp
     \brief    prediction class
 */
-
 #include <memory.h>
 #include "TComPrediction.h"
 
@@ -44,6 +43,8 @@
 // ====================================================================================================================
 // Constructor / destructor / initialize
 // ====================================================================================================================
+
+extern FILE *teste;
 
 TComPrediction::TComPrediction()
 #if LM_CHROMA
@@ -344,6 +345,8 @@ Void TComPrediction::predIntraLumaAng(TComPattern* pcTComPattern, UInt uiDirMode
   assert( g_aucConvertToBit[ iWidth ] >= 0 ); //   4x  4
   assert( g_aucConvertToBit[ iWidth ] <= 5 ); // 128x128
   assert( iWidth == iHeight  );
+
+  fprintf(teste, "%d\n", uiDirMode);
 
 #if QC_MDIS
   ptrSrc = pcTComPattern->getPredictorPtr( uiDirMode, g_aucConvertToBit[ iWidth ] + 2, m_piYuvExt );
