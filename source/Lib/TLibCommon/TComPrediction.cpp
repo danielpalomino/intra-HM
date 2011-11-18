@@ -36,6 +36,10 @@
 */
 #include <memory.h>
 #include "TComPrediction.h"
+//DANIEL BEGIN
+#include "map"
+#include "string"
+//DANIEL END
 
 //! \ingroup TLibCommon
 //! \{
@@ -44,7 +48,7 @@
 // Constructor / destructor / initialize
 // ====================================================================================================================
 
-extern FILE *teste;
+extern FILE *intra;
 
 TComPrediction::TComPrediction()
 #if LM_CHROMA
@@ -220,6 +224,26 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
   absAng             = angTable[absAng];
   intraPredAngle     = signAng * absAng;
 
+  //DANIEL BEGIN - CRIAR MAP
+  std::map<int,std::string> endToStr;
+  std::string str;
+  char temp[5];
+  for (int w=0; w<width; w++)
+  {
+      sprintf(temp,"%d",w);
+      str = "a";
+      str.append(temp);
+      endToStr[(int)&(pSrc[w-srcStride])] = str;
+  }
+  for (int w=0; w<width; w++)
+  {
+      sprintf(temp,"%d",w);
+      str = "l";
+      str.append(temp);
+      endToStr[(int)&(pSrc[w*srcStride-1])] = str;
+  }
+  //DANIEL END
+
   // Do the DC prediction
   if (modeDC)
   {
@@ -233,7 +257,6 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
       }
     }
   }
-
   // Do angular predictions
   else
   {
@@ -242,16 +265,57 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
     Pel  refAbove[2*MAX_CU_SIZE+1];
     Pel  refLeft[2*MAX_CU_SIZE+1];
 
+    //DANIEL BEGIN
+    //map dos novos endereços para os endereços conhecidos
+    std::map<int,int> endToEnd;
+    std::string bloco[64][64];
+    //DANIEL END
+
     // Initialise the Main and Left reference array.
+    int y=0;
     if (intraPredAngle < 0)
-    {
+    {      
       for (k=0;k<blkSize+1;k++)
       {
         refAbove[k+blkSize-1] = pSrc[k-srcStride-1];
+        /////////////////////DANIEL BEGIN
+        //endereço já mapeado para string
+        if (endToStr.find((int)&pSrc[k-srcStride-1]) != endToStr.end())
+        {
+            endToEnd[(int)&refAbove[k+blkSize-1]] = (int)&pSrc[k-srcStride-1];
+        }
+        //endereço não está mapeado para string
+        else
+        {
+            sprintf(temp,"%d",y);
+            str = "d";
+            str.append(temp);
+            endToStr[(int)&pSrc[k-srcStride-1]] = str;
+            endToEnd[(int)&refAbove[k+blkSize-1]] = (int)&pSrc[k-srcStride-1];
+            y++;
+        }        
+        //////////////////////DANIEL END
       }
       for (k=0;k<blkSize+1;k++)
       {
         refLeft[k+blkSize-1] = pSrc[(k-1)*srcStride-1];
+        /////////////////////DANIEL BEGIN
+        //endereço já mapeado para string
+        if (endToStr.find((int)&pSrc[(k-1)*srcStride-1]) != endToStr.end())
+        {
+            endToEnd[(int)&refLeft[k+blkSize-1]] = (int)&pSrc[(k-1)*srcStride-1];
+        }
+        //endereço não está mapeado para string
+        else
+        {
+            sprintf(temp,"%d",y);
+            str = "d";
+            str.append(temp);
+            endToStr[(int)&pSrc[(k-1)*srcStride-1]] = str;
+            endToEnd[(int)&refLeft[k+blkSize-1]] = (int)&pSrc[(k-1)*srcStride-1];
+            y++;
+        }
+        //////////////////////DANIEL END
       }
       refMain = (modeVer ? refAbove : refLeft) + (blkSize-1);
       refSide = (modeVer ? refLeft : refAbove) + (blkSize-1);
@@ -269,10 +333,44 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
       for (k=0;k<2*blkSize+1;k++)
       {
         refAbove[k] = pSrc[k-srcStride-1];
+        /////////////////////DANIEL BEGIN
+        //endereço já mapeado para string
+        if (endToStr.find((int)&pSrc[k-srcStride-1]) != endToStr.end())
+        {
+            endToEnd[(int)&refAbove[k]] = (int)&pSrc[k-srcStride-1];
+        }
+        //endereço não está mapeado para string
+        else
+        {
+            sprintf(temp,"%d",y);
+            str = "d";
+            str.append(temp);
+            endToStr[(int)&pSrc[k-srcStride-1]] = str;
+            endToEnd[(int)&refAbove[k]] = (int)&pSrc[k-srcStride-1];
+            y++;
+        }
+        //////////////////////DANIEL END
       }
       for (k=0;k<2*blkSize+1;k++)
       {
         refLeft[k] = pSrc[(k-1)*srcStride-1];
+        /////////////////////DANIEL BEGIN
+        //endereço já mapeado para string
+        if (endToStr.find((int)&pSrc[(k-1)*srcStride-1]) != endToStr.end())
+        {
+            endToEnd[(int)&refLeft[k]] = (int)&pSrc[(k-1)*srcStride-1];
+        }
+        //endereço não está mapeado para string
+        else
+        {
+            sprintf(temp,"%d",y);
+            str = "d";
+            str.append(temp);
+            endToStr[(int)&pSrc[(k-1)*srcStride-1]] = str;
+            endToEnd[(int)&refLeft[k]] = (int)&pSrc[(k-1)*srcStride-1];
+            y++;
+        }
+        //////////////////////DANIEL END
       }
       refMain = modeVer ? refAbove : refLeft;
     }
@@ -284,6 +382,9 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
         for (l=0;l<blkSize;l++)
         {
           pDst[k*dstStride+l] = refMain[l+1];
+          //DANIEL BEGIN
+          bloco[k][l] = endToStr[endToEnd[(int)&refMain[l+1]]];
+          //DANIEL END
         }
       }
     }
@@ -334,6 +435,18 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
         }
       }
     }
+
+    for(int i=0; i<blkSize; i++)
+    {
+        for(int j=0; j<blkSize; j++)
+        {
+            if (modeHor)
+                fprintf(intra,"%s\t",bloco[i][j].c_str());
+            else
+                fprintf(intra,"%s\t",bloco[j][i].c_str());
+        }
+    }
+    fprintf(intra,"\n");
   }
 }
 
@@ -346,10 +459,34 @@ Void TComPrediction::predIntraLumaAng(TComPattern* pcTComPattern, UInt uiDirMode
   assert( g_aucConvertToBit[ iWidth ] <= 5 ); // 128x128
   assert( iWidth == iHeight  );
 
-  fprintf(teste, "%d\n", uiDirMode);
-
+  
 #if QC_MDIS
   ptrSrc = pcTComPattern->getPredictorPtr( uiDirMode, g_aucConvertToBit[ iWidth ] + 2, m_piYuvExt );
+  //DANIEL BEGIN
+  /*if(bAbove && bLeft)
+      fprintf(teste, "both available\n");
+  else if(bAbove)
+      fprintf(teste, "above available\n");
+  else if(bLeft)
+      fprintf(teste, "left available\n");
+  else
+      fprintf(teste, "none available\n");
+
+  fprintf(teste, "%d\t%d\t%d\t%d\n", pcCU->getCUPelX(), pcCU->getCUPelY(), uiDirMode, iWidth);
+  //Int cont=0;
+  for (int *i= m_piYuvExt; i < ptrSrc; i++)
+  {
+      fprintf(teste, "%d", *i);
+      cont++;
+      if(cont%iWidth == 0)
+          fprintf(teste, "\n");
+      else
+          fprintf(teste, "\t");
+      if(cont%(iWidth*iWidth==0))
+          fprintf(teste, "\n");
+  }*/
+  
+  //DANIEL END
 #else
   ptrSrc = pcTComPattern->getAdiOrgBuf( iWidth, iHeight, m_piYuvExt );
 #endif //QC_MDIS

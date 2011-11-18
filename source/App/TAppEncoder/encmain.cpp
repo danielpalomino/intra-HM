@@ -44,13 +44,18 @@
 // Main function
 // ====================================================================================================================
 
-FILE *teste;
+//DANIEL BEGIN
+FILE *intra;
+//FILE *pont;
+//DANIEL END
 
 int main(int argc, char* argv[])
 {
   TAppEncTop  cTAppEncTop;
-
-  teste = fopen("teste.txt" , "w");
+  //DANIEL BEGIN
+  intra = fopen("intra.txt" , "w");
+  //pont = fopen("pont.txt" , "w");
+  //DANIEL END
 
   // print information
   fprintf( stdout, "\n" );
@@ -84,7 +89,10 @@ int main(int argc, char* argv[])
   // destroy application encoder class
   cTAppEncTop.destroy();
 
-  fclose(teste);
+  //DANIEL BEGIN
+  fclose(intra);
+  //fclose(pont);
+  //DANIEL END
 
   return 0;
 }

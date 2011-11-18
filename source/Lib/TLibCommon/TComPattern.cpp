@@ -1377,6 +1377,7 @@ Int* TComPattern::getPredictorPtr( UInt uiDirMode, UInt log2BlkSize, Int* piAdiB
   {
 #if MN_MDIS_SIMPLIFICATION
     piSrc += (2 * width + 1) * (2 * height + 1);
+
 #else
     piSrc += ((2 * width + 1) * (2 * height + 1)) << (ucFiltIdx - 1);
 #endif
