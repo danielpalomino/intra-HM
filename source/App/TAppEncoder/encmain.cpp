@@ -46,6 +46,8 @@
 
 //DANIEL BEGIN
 FILE *intra;
+FILE *intraCplus;
+bool modos[65][35];
 //FILE *pont;
 //DANIEL END
 
@@ -53,8 +55,11 @@ int main(int argc, char* argv[])
 {
   TAppEncTop  cTAppEncTop;
   //DANIEL BEGIN
+  for(int i=0; i<65; i++)
+      for(int j=0; j<35; j++)
+          modos[i][j] = false;
   intra = fopen("intra.txt" , "w");
-  //pont = fopen("pont.txt" , "w");
+  intraCplus = fopen("intra.cpp" , "w");
   //DANIEL END
 
   // print information
@@ -91,7 +96,7 @@ int main(int argc, char* argv[])
 
   //DANIEL BEGIN
   fclose(intra);
-  //fclose(pont);
+  fclose(intraCplus);
   //DANIEL END
 
   return 0;

@@ -49,6 +49,9 @@
 // ====================================================================================================================
 
 extern FILE *intra;
+extern FILE *intraCplus;
+extern bool modos[65][35];
+bool type[65][65];
 
 TComPrediction::TComPrediction()
 #if LM_CHROMA
@@ -228,20 +231,24 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
   std::map<int,std::string> endToStr;
   std::string str;
   char temp[5];
-  for (int w=0; w<width; w++)
+  for (int w=0; w<width*2; w++)
   {
       sprintf(temp,"%d",w);
       str = "a";
       str.append(temp);
       endToStr[(int)&(pSrc[w-srcStride])] = str;
   }
-  for (int w=0; w<width; w++)
+  for (int w=0; w<width*2; w++)
   {
       sprintf(temp,"%d",w);
       str = "l";
       str.append(temp);
       endToStr[(int)&(pSrc[w*srcStride-1])] = str;
   }
+  //inicialização
+  for (int i=0; i<blkSize; i++)
+      for(int j=0; j<blkSize; j++)
+          type[i][j] = true;
   //DANIEL END
 
   // Do the DC prediction
@@ -269,6 +276,7 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
     //map dos novos endereços para os endereços conhecidos
     std::map<int,int> endToEnd;
     std::string bloco[64][64];
+    std::string blocoCplus [64][64];
     //DANIEL END
 
     // Initialise the Main and Left reference array.
@@ -326,6 +334,20 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
       {
         invAngleSum += invAngle;
         refMain[k] = refSide[invAngleSum>>8];
+        /////////////////////DANIEL BEGIN
+        if(endToEnd.find((int)&refSide[invAngleSum>>8]) == endToEnd.end())
+        {
+            sprintf(temp,"%d",y);
+            str = "d";
+            str.append(temp);
+            endToStr[(int)&refMain[k]] = str;
+            y++;
+        }
+        else
+        {
+            endToEnd[(int)&refMain[k]] = endToEnd[(int)&refSide[invAngleSum>>8]];
+        }
+        //////////////////////DANIEL END
       }
     }
     else
@@ -382,8 +404,9 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
         for (l=0;l<blkSize;l++)
         {
           pDst[k*dstStride+l] = refMain[l+1];
-          //DANIEL BEGIN
+          //DANIEL BEGIN - jogando vizinhos para o bloco predito
           bloco[k][l] = endToStr[endToEnd[(int)&refMain[l+1]]];
+          blocoCplus[k][l] = endToStr[endToEnd[(int)&refMain[l+1]]];
           //DANIEL END
         }
       }
@@ -395,27 +418,67 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
       Int deltaFract;
       Int refMainIndex;
 
+      std::string deltaf;
+      char df [10];
+
+//      fprintf(intra,"mode\t-\t%d\n", dirMode);
+//      fprintf(intra,"b_size\t-\t%d\n", blkSize);
+
       for (k=0;k<blkSize;k++)
       {
         deltaPos += intraPredAngle;
         deltaInt   = deltaPos >> 5;
         deltaFract = deltaPos & (32 - 1);
 
+//        fprintf(intra,"%d\t%d\t%d\n", deltaPos, deltaInt, deltaFract);
+
         if (deltaFract)
         {
           // Do linear filtering
           for (l=0;l<blkSize;l++)
           {
+              type[k][l] = false;
             refMainIndex        = l+deltaInt+1;
             pDst[k*dstStride+l] = (Pel) ( ((32-deltaFract)*refMain[refMainIndex]+deltaFract*refMain[refMainIndex+1]+16) >> 5 );
+
+            sprintf(df,"%d", deltaFract);
+            deltaf = "";
+            deltaf.append(df);
+
+            //DANIEL BEGIN - jogando vizinhos para o bloco predito
+            if(endToEnd.find((int)&refMain[refMainIndex]) == endToEnd.end())
+            {
+                bloco[k][l] = deltaf + "\t" + endToStr[(int)&refMain[refMainIndex]] + "\t" + endToStr[(int)&refMain[refMainIndex+1]];
+                blocoCplus[k][l] = "((32 - " + deltaf + ") * " + endToStr[(int)&refMain[refMainIndex]] + " + " + deltaf + " * " + endToStr[(int)&refMain[refMainIndex+1]] + " + 16) >> 5";
+            }
+            else
+            {
+                bloco[k][l] = deltaf + "\t" + endToStr[endToEnd[(int)&refMain[refMainIndex]]] + "\t" + endToStr[endToEnd[(int)&refMain[refMainIndex+1]]];
+                blocoCplus[k][l] = "((32 - " + deltaf + ") * " + endToStr[endToEnd[(int)&refMain[refMainIndex]]] + " + " + deltaf + " * " + endToStr[endToEnd[(int)&refMain[refMainIndex+1]]] + " + 16) >> 5";
+            }
+            //DANIEL END
           }
         }
         else
         {
+            
           // Just copy the integer samples
           for (l=0;l<blkSize;l++)
           {
+              type[k][l] = true;
             pDst[k*dstStride+l] = refMain[l+deltaInt+1];
+            //DANIEL BEGIN - jogando vizinhos para o bloco predito
+            if(endToEnd.find((int)&refMain[l+deltaInt+1]) == endToEnd.end())
+            {
+                bloco[k][l] = endToStr[(int)&refMain[l+deltaInt+1]];
+                blocoCplus[k][l] = endToStr[(int)&refMain[l+deltaInt+1]];
+            }
+            else
+            {
+                bloco[k][l] = endToStr[endToEnd[(int)&refMain[l+deltaInt+1]]];
+                blocoCplus[k][l] = endToStr[endToEnd[(int)&refMain[l+deltaInt+1]]];
+            }
+            //DANIEL END
           }
         }
       }
@@ -435,19 +498,40 @@ Void TComPrediction::xPredIntraAng( Int* pSrc, Int srcStride, Pel*& rpDst, Int d
         }
       }
     }
-
-    for(int i=0; i<blkSize; i++)
+    if (!modos[blkSize][dirMode])
     {
-        for(int j=0; j<blkSize; j++)
+        fprintf(intra,"%d\n", dirMode);
+        fprintf(intra,"%d\n", blkSize);
+        fprintf(intraCplus,"//mode - %d\n", dirMode);
+        fprintf(intraCplus,"//block size - %d\n", blkSize);
+        for(int i=0; i<blkSize; i++)
         {
-            if (modeHor)
-                fprintf(intra,"%s\t",bloco[i][j].c_str());
-            else
-                fprintf(intra,"%s\t",bloco[j][i].c_str());
+            for(int j=0; j<blkSize; j++)
+            {
+                if (modeVer)
+                {
+                    fprintf(intraCplus,"s[%d][%d] = o[%d][%d] - (%s);",i,j,i,j,blocoCplus[i][j].c_str());
+                    if(type[i][j])
+                        fprintf(intra,"i %s",bloco[i][j].c_str());
+                    else
+                        fprintf(intra,"f %s",bloco[i][j].c_str());
+                }
+                else
+                {
+                    fprintf(intraCplus,"s[%d][%d] = o[%d][%d] - (%s);",i,j,i,j,blocoCplus[j][i].c_str());
+                    if(type[i][j])
+                        fprintf(intra,"i %s",bloco[j][i].c_str());
+                    else
+                        fprintf(intra,"f %s",bloco[j][i].c_str());
+                }
+                fprintf(intra,"\n");
+                fprintf(intraCplus,"\n");
+            }
         }
     }
-    fprintf(intra,"\n");
-  }
+    modos[blkSize][dirMode] = true;
+    
+  }  
 }
 
 Void TComPrediction::predIntraLumaAng(TComPattern* pcTComPattern, UInt uiDirMode, Pel* piPred, UInt uiStride, Int iWidth, Int iHeight,  TComDataCU* pcCU, Bool bAbove, Bool bLeft )
